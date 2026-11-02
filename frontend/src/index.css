@@ -1,0 +1,130 @@
+:root {
+  --cbit-blue: #0b4ea2;
+  --cbit-blue-dark: #083a7a;
+  --cbit-blue-light: #e8f1fc;
+  --cbit-sky: #9fd3ff;
+  --surface: #f5f8fc;
+
+  --bs-primary: #0b4ea2;
+  --bs-primary-rgb: 11, 78, 162;
+  --bs-link-color: #0b4ea2;
+  --bs-link-color-rgb: 11, 78, 162;
+  --bs-link-hover-color: #083a7a;
+  --bs-link-hover-color-rgb: 8, 58, 122;
+  --bs-body-font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --bs-body-bg: var(--surface);
+  --bs-border-radius: 0.6rem;
+}
+
+body {
+  background: var(--surface);
+  color: #1d2939;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--cbit-blue);
+  --bs-btn-border-color: var(--cbit-blue);
+  --bs-btn-hover-bg: var(--cbit-blue-dark);
+  --bs-btn-hover-border-color: var(--cbit-blue-dark);
+  --bs-btn-active-bg: var(--cbit-blue-dark);
+  --bs-btn-active-border-color: var(--cbit-blue-dark);
+  --bs-btn-disabled-bg: var(--cbit-blue);
+  --bs-btn-disabled-border-color: var(--cbit-blue);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--cbit-blue);
+  --bs-btn-border-color: var(--cbit-blue);
+  --bs-btn-hover-bg: var(--cbit-blue);
+  --bs-btn-hover-border-color: var(--cbit-blue);
+  --bs-btn-active-bg: var(--cbit-blue-dark);
+}
+.text-primary { color: var(--cbit-blue) !important; }
+.nav-pills {
+  --bs-nav-pills-link-active-bg: var(--cbit-blue);
+}
+.nav-pills .nav-link { color: #344054; background: #fff; border: 1px solid #e4e7ec; }
+.nav-pills .nav-link.active { border-color: var(--cbit-blue); }
+.form-control:focus, .form-select:focus {
+  border-color: #6b9ee0;
+  box-shadow: 0 0 0 0.2rem rgba(11, 78, 162, 0.15);
+}
+
+/* ---- Navbar ---- */
+.app-navbar {
+  background: linear-gradient(90deg, var(--cbit-blue-dark), var(--cbit-blue));
+  box-shadow: 0 2px 12px rgba(8, 58, 122, 0.25);
+}
+.app-navbar .nav-link { color: rgba(255, 255, 255, 0.8); font-weight: 500; }
+.app-navbar .nav-link:hover, .app-navbar .nav-link.active { color: #fff; }
+.app-navbar .nav-link.active { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--cbit-blue);
+}
+
+/* ---- Hero ---- */
+.hero {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(159, 211, 255, 0.25), transparent 45%),
+    linear-gradient(135deg, var(--cbit-blue-dark) 0%, var(--cbit-blue) 60%, #1a6fd6 100%);
+}
+.hero-accent { color: var(--cbit-sky); }
+.hero-badge { background: rgba(255, 255, 255, 0.15); color: #fff; font-weight: 500; padding: 0.5em 0.9em; }
+.hero-card { background: #fff; border-radius: 1rem; padding: 1.75rem; }
+.hero-card-icon, .step-icon, .auth-icon {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--cbit-blue-light);
+  color: var(--cbit-blue);
+}
+.hero-card-icon, .step-icon { width: 44px; height: 44px; font-size: 1.25rem; }
+.auth-icon { width: 56px; height: 56px; font-size: 1.6rem; border-radius: 16px; }
+.step-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.step-card:hover { transform: translateY(-3px); box-shadow: 0 0.5rem 1.5rem rgba(11, 78, 162, 0.12) !important; }
+
+/* ---- Cards ---- */
+.card { border-radius: 0.9rem; }
+.auth-card { border-top: 4px solid var(--cbit-blue) !important; }
+.ride-card {
+  border: 1px solid #e4e7ec;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.ride-card:hover { box-shadow: 0 0.5rem 1.25rem rgba(16, 24, 40, 0.08); transform: translateY(-2px); }
+
+.route-line { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; position: relative; }
+.route-line::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 14px;
+  bottom: 14px;
+  border-left: 2px dashed #b9cbe5;
+}
+.route-stop { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+.route-text { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.route-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; position: relative; z-index: 1; }
+.route-dot-start { background: #fff; border: 3px solid var(--cbit-blue); }
+.route-dot-end { background: var(--cbit-blue); }
+
+.ride-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.875rem; color: #475467; }
+.ride-meta .bi { color: var(--cbit-blue); margin-right: 0.15rem; }
+
+.cost-preview {
+  background: var(--cbit-blue-light);
+  color: var(--cbit-blue-dark);
+  border-radius: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.empty-state { background: #fff; border: 1px dashed #c9d6ea; border-radius: 1rem; }
+
+.app-footer { background: #fff; border-top: 1px solid #e4e7ec; color: #475467; }
+
+.modal-backdrop.show { opacity: 0.45; }

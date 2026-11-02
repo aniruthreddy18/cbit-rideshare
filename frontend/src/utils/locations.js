@@ -1,0 +1,23 @@
+// Suggestions for the From/To inputs (students can still type any place).
+export const COMMON_PLACES = [
+  'CBIT Campus, Gandipet',
+  'Mehdipatnam',
+  'Tolichowki',
+  'Lingampally',
+  'Kokapet',
+  'Narsingi',
+  'Manikonda',
+  'Gachibowli',
+  'Hitech City',
+  'Kukatpally',
+  'Miyapur',
+  'Ameerpet',
+  'Panjagutta',
+  'Secunderabad',
+  'Dilsukhnagar',
+  'LB Nagar',
+  'Attapur',
+  'Uppal',
+  'Koti',
+  'Rajiv Gandhi International Airport',
+];

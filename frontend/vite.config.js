@@ -1,0 +1,25 @@
+import react from '@vitejs/plugin-react';
+import { defineConfig, loadEnv } from 'vite';
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const apiTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:5050';
+
+  return {
+    plugins: [react()],
+    server: {
+      port: 5173,
+      // The browser calls /api/... on the Vite server, which forwards to Express.
+      // This avoids CORS issues and keeps frontend/backend paths identical.
+      proxy: {
+        '/api': { target: apiTarget, changeOrigin: true },
+      },
+    },
+    preview: {
+      port: 4173,
+      proxy: {
+        '/api': { target: apiTarget, changeOrigin: true },
+      },
+    },
+  };
+});
