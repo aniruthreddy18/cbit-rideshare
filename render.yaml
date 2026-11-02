@@ -1,0 +1,20 @@
+# Render Blueprint: Render dashboard > New > Blueprint > pick this repository.
+services:
+  - type: web
+    name: cbit-rideshare
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: MONGO_URI
+        sync: false # you paste your Atlas connection string during setup
+      - key: JWT_SECRET
+        generateValue: true # Render creates a random secret for you
+      - key: MONGO_DB_NAME
+        value: cbit_rideshare

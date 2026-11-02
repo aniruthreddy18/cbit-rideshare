@@ -7,6 +7,8 @@ A ride-sharing platform exclusively for CBIT Hyderabad students (`@cbit.ac.in` e
 
 ```
 cbit-rideshare/
+├── package.json                   # build + start commands used for deployment
+├── render.yaml                    # Render Blueprint (one-click deploy)
 ├── backend/
 │   ├── server.js                  # entry: loads .env, connects MongoDB, starts Express
 │   ├── .env.example               # copy to .env
@@ -224,16 +226,93 @@ brew services start mongodb-community
 
 Then set `MONGO_URI=mongodb://127.0.0.1:27017` in `backend/.env`. No code changes are needed.
 
-## Production build
+## Deployment (free): Render + MongoDB Atlas
+
+The whole app deploys as **one Render web service**: Express serves the API under `/api` and the built React app
+for every other URL, so there is one link, no CORS setup and no `VITE_API_URL`. The database stays on Atlas.
+
+### Step 1 – Put the project on GitHub (Mac Terminal)
+
+Create an **empty** repository at https://github.com/new (e.g. `cbit-rideshare`, no README). Then:
 
 ```bash
-cd ~/Downloads/cbit-rideshare/frontend
+cd ~/Downloads/cbit-rideshare
+```
+
+```bash
+git init
+```
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "CBIT RideShare"
+```
+
+```bash
+git branch -M main
+```
+
+```bash
+git remote add origin https://github.com/YOUR_GITHUB_USERNAME/cbit-rideshare.git
+```
+
+```bash
+git push -u origin main
+```
+
+`.env` files and `node_modules` are excluded by `.gitignore`, so your secrets are **not** uploaded. Check on GitHub
+that no `.env` file appears.
+
+### Step 2 – Allow Render to reach Atlas
+
+Render's free servers don't have fixed IP addresses, so in **Atlas → Security → Network Access → Add IP Address**
+choose **Allow access from anywhere** (`0.0.0.0/0`). Your database is still protected by the database user's
+password – use a long random one.
+
+### Step 3 – Create the service on Render
+
+1. Sign up at https://render.com with your GitHub account.
+2. **New → Blueprint** → select your `cbit-rideshare` repository. Render reads `render.yaml`.
+3. When asked for `MONGO_URI`, paste your Atlas connection string. `JWT_SECRET` is generated automatically.
+4. Click **Apply**. The first build takes 2–4 minutes.
+
+(Without the Blueprint: **New → Web Service** → your repo → Build command `npm run build`, Start command
+`npm start`, Instance type *Free*, and add environment variables `NODE_ENV=production`, `NODE_VERSION=22`,
+`MONGO_URI=...`, `JWT_SECRET=...` (a new random 64+ character value).)
+
+### Step 4 – Check it
+
+- `https://YOUR-SERVICE.onrender.com/api/health` → `{"success":true,"api":"ok","database":"connected"}`
+- `https://YOUR-SERVICE.onrender.com` → the CBIT RideShare home page. Register, offer a ride, join from a second account.
+
+Every `git push` to `main` redeploys automatically.
+
+### Good to know
+
+- **Free tier sleeps** after 15 minutes without visitors; the next visit takes ~50 seconds to wake up. A paid instance
+  (or a different host) avoids this.
+- **Logs:** Render dashboard → your service → *Logs*. The same readable `[db]` / `[api]` messages appear there.
+- **Database errors on Render** (`bad auth`, `Server selection timed out`): fix `MONGO_URI` under *Environment*, or the
+  Atlas Network Access entry, then *Manual Deploy → Deploy latest commit*.
+- **Own domain:** Render → *Settings → Custom Domains*.
+- **Hosting the frontend elsewhere** (e.g. Vercel/Netlify): build it with `VITE_API_URL=https://YOUR-SERVICE.onrender.com/api`
+  and add the frontend's URL to `CLIENT_ORIGIN` on Render.
+
+### Run the production build locally (optional)
+
+```bash
+cd ~/Downloads/cbit-rideshare
 ```
 
 ```bash
 npm run build
 ```
 
-The static site is written to `frontend/dist`. If it's hosted on a different domain than the API, set
-`VITE_API_URL=https://your-api.example.com/api` before building and add the site's URL to `CLIENT_ORIGIN`
-in `backend/.env`.
+```bash
+NODE_ENV=production npm start
+```
+
+Then open http://localhost:5050 – one server, exactly as on Render.

@@ -54,6 +54,8 @@ export const env = {
     .map((s) => s.trim().replace(/\/$/, ''))
     .filter(Boolean),
   authRateLimit: Number(process.env.AUTH_RATE_LIMIT) || 50,
+  // Number of proxies in front of the app (1 on Render/Railway). Defaults to 1 in production.
+  trustProxy: Number(process.env.TRUST_PROXY ?? (process.env.NODE_ENV === 'production' ? 1 : 0)) || 0,
 };
 
 export const isProduction = env.nodeEnv === 'production';
