@@ -5,14 +5,15 @@ import AlertMessage from '../components/AlertMessage.jsx';
 import Loading from '../components/Loading.jsx';
 import RouteLine from '../components/RouteLine.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
-import { formatDate, formatDateTime, formatMoney, formatTime } from '../utils/format.js';
+import { formatDate, formatDateTime, formatMoney, formatTime, pricePerSeatOf } from '../utils/format.js';
 
 function RideSummary({ ride }) {
+  const price = pricePerSeatOf(ride);
   return (
     <div className="ride-meta">
       <span><i className="bi bi-calendar3" /> {formatDate(ride.date)}</span>
       <span><i className="bi bi-clock" /> {formatTime(ride.time)}</span>
-      <span><i className="bi bi-cash-coin" /> {formatMoney(ride.totalCost)} total</span>
+      <span><i className="bi bi-cash-coin" /> {formatMoney(price)} per person ({formatMoney(price)} × {ride.seats} = {formatMoney(price * ride.seats)})</span>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import {
-  CBIT_EMAIL_REGEX,
   DATE_REGEX,
+  EMAIL_REGEX,
+  MAX_PRICE_PER_SEAT,
   MAX_SEATS,
-  MAX_TOTAL_COST,
   PHONE_REGEX,
   TIME_REGEX,
   toDepartureDate,
@@ -15,7 +15,7 @@ const rideSchema = new mongoose.Schema(
 
     // Contact details of the ride owner (copied at creation time).
     name: { type: String, required: true, trim: true, maxlength: 60 },
-    email: { type: String, required: true, lowercase: true, trim: true, match: CBIT_EMAIL_REGEX },
+    email: { type: String, required: true, lowercase: true, trim: true, match: EMAIL_REGEX },
     phone: { type: String, required: true, match: [PHONE_REGEX, 'Enter a valid 10-digit mobile number'] },
 
     from: { type: String, required: [true, 'Pickup location is required'], trim: true, maxlength: 100 },
@@ -46,12 +46,15 @@ const rideSchema = new mongoose.Schema(
       },
     },
 
-    totalCost: {
+    // What each passenger pays. The owner enters this; totalCost is derived from it.
+    pricePerSeat: {
       type: Number,
-      required: [true, 'Total cost is required'],
-      min: [0, 'Cost cannot be negative'],
-      max: [MAX_TOTAL_COST, `Cost cannot exceed ₹${MAX_TOTAL_COST}`],
+      required: [true, 'Price per person is required'],
+      min: [0, 'Price cannot be negative'],
+      max: [MAX_PRICE_PER_SEAT, `Price cannot exceed ₹${MAX_PRICE_PER_SEAT} per person`],
     },
+    // pricePerSeat x seats (what the owner collects when every seat is filled).
+    totalCost: { type: Number, min: 0 },
     notes: { type: String, trim: true, maxlength: 300, default: '' },
 
     status: { type: String, enum: ['active', 'cancelled'], default: 'active', index: true },
@@ -68,6 +71,9 @@ const rideSchema = new mongoose.Schema(
 );
 
 rideSchema.pre('validate', function deriveFields() {
+  if (typeof this.pricePerSeat === 'number' && typeof this.seats === 'number') {
+    this.totalCost = Math.round(this.pricePerSeat * this.seats * 100) / 100;
+  }
   if (this.isNew && (this.availableSeats === undefined || this.availableSeats === null)) {
     this.availableSeats = this.seats;
   }

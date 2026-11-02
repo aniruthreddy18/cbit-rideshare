@@ -9,6 +9,10 @@ export function serializeRide(ride, viewerId, { booking = null } = {}) {
   const isOwner = idOf(data.owner) === String(viewerId);
   const canSeeContact = isOwner || booking?.status === 'confirmed';
 
+  if (typeof data.pricePerSeat !== 'number' && typeof data.totalCost === 'number' && data.seats > 0) {
+    data.pricePerSeat = Math.round(data.totalCost / data.seats);
+  }
+
   const result = {
     ...data,
     owner: idOf(data.owner),

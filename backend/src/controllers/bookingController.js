@@ -86,7 +86,7 @@ export async function getOwnerRequests(req, res) {
   }
   const bookings = await Booking.find(filter)
     .sort({ createdAt: -1 })
-    .populate('ride', 'from to date time departureAt seats availableSeats totalCost status');
+    .populate('ride', 'from to date time departureAt seats availableSeats pricePerSeat totalCost status');
   res.json({ success: true, count: bookings.length, bookings });
 }
 

@@ -18,10 +18,10 @@ export function formatMoney(amount) {
   return `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 }
 
-/** Cost each person pays if the ride fills up (owner + all passengers share). */
-export function perPersonShare(totalCost, seats) {
-  const people = (Number(seats) || 0) + 1;
-  return Math.ceil((Number(totalCost) || 0) / people);
+/** Price per person; falls back to totalCost / seats for rides created before per-person pricing. */
+export function pricePerSeatOf(ride) {
+  if (typeof ride?.pricePerSeat === 'number') return ride.pricePerSeat;
+  return ride?.seats ? Math.round((Number(ride.totalCost) || 0) / ride.seats) : 0;
 }
 
 /** Today's date in IST as YYYY-MM-DD (for <input type="date" min>). */

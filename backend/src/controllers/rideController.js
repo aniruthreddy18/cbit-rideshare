@@ -3,8 +3,8 @@ import Ride from '../models/Ride.js';
 import AppError from '../utils/AppError.js';
 import { serializeRide } from '../utils/serializers.js';
 import {
+  MAX_PRICE_PER_SEAT,
   MAX_SEATS,
-  MAX_TOTAL_COST,
   TIME_REGEX,
   assertObjectId,
   escapeRegex,
@@ -27,7 +27,7 @@ function parseRideInput(body = {}, user) {
   const date = str(body.date);
   const time = str(body.time);
   const seats = num(body.seats);
-  const totalCost = num(body.totalCost);
+  const pricePerSeat = num(body.pricePerSeat);
   const notes = str(body.notes);
   const phoneInput = body.phone === undefined || body.phone === '' ? user.phone : body.phone;
   const phone = normalizePhone(phoneInput);
@@ -53,14 +53,16 @@ function parseRideInput(body = {}, user) {
   if (!Number.isInteger(seats) || seats < 1 || seats > MAX_SEATS) {
     errors.seats = `Seats must be a whole number from 1 to ${MAX_SEATS}.`;
   }
-  if (!Number.isFinite(totalCost) || totalCost < 0 || totalCost > MAX_TOTAL_COST) {
-    errors.totalCost = `Total cost must be between ₹0 and ₹${MAX_TOTAL_COST}.`;
+  if (!Number.isFinite(pricePerSeat) || pricePerSeat < 0 || pricePerSeat > MAX_PRICE_PER_SEAT) {
+    errors.pricePerSeat = `Price per person must be between ₹0 and ₹${MAX_PRICE_PER_SEAT}.`;
   }
   if (!phone) errors.phone = 'Enter a valid 10-digit contact number.';
   if (notes.length > 300) errors.notes = 'Notes must be at most 300 characters.';
 
   throwIfErrors(errors);
-  return { from, to, date, time, departureAt, seats, totalCost: Math.round(totalCost * 100) / 100, phone, notes };
+  const price = Math.round(pricePerSeat * 100) / 100;
+  const totalCost = Math.round(price * seats * 100) / 100;
+  return { from, to, date, time, departureAt, seats, pricePerSeat: price, totalCost, phone, notes };
 }
 
 async function findRideOr404(id) {
@@ -89,7 +91,7 @@ export async function createRide(req, res) {
   res.status(201).json({ success: true, message: 'Ride published successfully.', ride: serializeRide(ride, req.user._id) });
 }
 
-// GET /api/rides?from=&to=&date=&minSeats=&maxCost=&q=&sort=
+// GET /api/rides?from=&to=&date=&minSeats=&maxPrice=&q=&sort=
 export async function listRides(req, res) {
   const query = req.query || {};
   const filter = { status: 'active', departureAt: { $gt: new Date() } };
@@ -115,15 +117,15 @@ export async function listRides(req, res) {
   }
   filter.availableSeats = { $gte: minSeats };
 
-  if (str(query.maxCost)) {
-    const maxCost = num(query.maxCost);
-    if (!Number.isFinite(maxCost) || maxCost < 0) throw new AppError(400, 'Maximum cost must be a positive number.');
-    filter.totalCost = { $lte: maxCost };
+  if (str(query.maxPrice)) {
+    const maxPrice = num(query.maxPrice);
+    if (!Number.isFinite(maxPrice) || maxPrice < 0) throw new AppError(400, 'Maximum price must be a positive number.');
+    filter.pricePerSeat = { $lte: maxPrice };
   }
 
   const sorts = {
     soonest: { departureAt: 1 },
-    cheapest: { totalCost: 1, departureAt: 1 },
+    cheapest: { pricePerSeat: 1, departureAt: 1 },
     seats: { availableSeats: -1, departureAt: 1 },
   };
   const sort = sorts[str(query.sort)] || sorts.soonest;
@@ -218,6 +220,7 @@ export async function updateRide(req, res) {
           departureAt: literal(values.departureAt),
           seats: literal(values.seats),
           availableSeats: { $add: ['$availableSeats', delta] },
+          pricePerSeat: literal(values.pricePerSeat),
           totalCost: literal(values.totalCost),
           phone: literal(values.phone),
           notes: literal(values.notes),

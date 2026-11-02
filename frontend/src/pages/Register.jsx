@@ -5,7 +5,7 @@ import AlertMessage from '../components/AlertMessage.jsx';
 import FormField from '../components/FormField.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
-const CBIT_EMAIL = /^[a-z0-9._%+-]+@cbit\.ac\.in$/i;
+const EMAIL = /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i;
 
 // Mirrors the server rules in backend/src/controllers/authController.js
 function validate(form) {
@@ -15,7 +15,7 @@ function validate(form) {
   else if (!/^[a-zA-Z][a-zA-Z .'-]*$/.test(name)) errors.name = 'Use letters, spaces, dots, hyphens and apostrophes only.';
 
   if (!form.email.trim()) errors.email = 'Email is required.';
-  else if (!CBIT_EMAIL.test(form.email.trim())) errors.email = 'Use your CBIT email address (ending in @cbit.ac.in).';
+  else if (!EMAIL.test(form.email.trim())) errors.email = 'Enter a valid email address (e.g. name@gmail.com).';
 
   const phone = form.phone.replace(/[\s()-]/g, '');
   if (!/^(?:\+?91|0)?[6-9]\d{9}$/.test(phone)) errors.phone = 'Enter a valid 10-digit Indian mobile number.';
@@ -74,7 +74,7 @@ export default function Register() {
               <div className="text-center mb-4">
                 <span className="auth-icon"><i className="bi bi-person-plus" /></span>
                 <h1 className="h3 fw-bold mt-3 mb-1">Create your account</h1>
-                <p className="text-secondary mb-0">Only CBIT students with an @cbit.ac.in email can join.</p>
+                <p className="text-secondary mb-0">Join CBIT students sharing rides to and from campus.</p>
               </div>
 
               <AlertMessage onClose={() => setError('')}>{error}</AlertMessage>
@@ -82,11 +82,11 @@ export default function Register() {
               <form onSubmit={onSubmit} noValidate>
                 <FormField label="Full name" name="name" icon="person" autoComplete="name" value={form.name} onChange={onChange} error={errors.name} autoFocus />
                 <FormField
-                  label="CBIT email"
+                  label="Email"
                   name="email"
                   type="email"
                   icon="envelope"
-                  placeholder="rollnumber@cbit.ac.in"
+                  placeholder="you@example.com"
                   autoComplete="email"
                   value={form.email}
                   onChange={onChange}

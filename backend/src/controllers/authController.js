@@ -1,7 +1,7 @@
 import { signToken } from '../middleware/auth.js';
 import User from '../models/User.js';
 import AppError from '../utils/AppError.js';
-import { CBIT_EMAIL_REGEX, normalizePhone, str, throwIfErrors } from '../utils/validators.js';
+import { EMAIL_REGEX, normalizePhone, str, throwIfErrors } from '../utils/validators.js';
 
 function authResponse(res, status, user) {
   res.status(status).json({ success: true, token: signToken(user._id), user });
@@ -20,7 +20,7 @@ export async function register(req, res) {
   else if (!/^[a-zA-Z][a-zA-Z .'-]*$/.test(name)) errors.name = 'Name can contain only letters, spaces, dots, hyphens and apostrophes.';
 
   if (!email) errors.email = 'Email is required.';
-  else if (!CBIT_EMAIL_REGEX.test(email)) errors.email = 'Use your CBIT email address (ending in @cbit.ac.in).';
+  else if (email.length > 254 || !EMAIL_REGEX.test(email)) errors.email = 'Enter a valid email address (e.g. name@gmail.com).';
 
   if (!phone) errors.phone = 'Enter a valid 10-digit Indian mobile number.';
 

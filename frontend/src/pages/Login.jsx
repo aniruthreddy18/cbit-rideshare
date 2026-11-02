@@ -53,7 +53,7 @@ export default function Login() {
               <div className="text-center mb-4">
                 <span className="auth-icon"><i className="bi bi-box-arrow-in-right" /></span>
                 <h1 className="h3 fw-bold mt-3 mb-1">Welcome back</h1>
-                <p className="text-secondary mb-0">Log in with your CBIT email</p>
+                <p className="text-secondary mb-0">Log in to your account</p>
               </div>
 
               <AlertMessage type="warning" onClose={clearSessionMessage}>{sessionMessage}</AlertMessage>
@@ -61,11 +61,11 @@ export default function Login() {
 
               <form onSubmit={onSubmit} noValidate>
                 <FormField
-                  label="CBIT email"
+                  label="Email"
                   name="email"
                   type="email"
                   icon="envelope"
-                  placeholder="rollnumber@cbit.ac.in"
+                  placeholder="you@example.com"
                   autoComplete="email"
                   value={form.email}
                   onChange={onChange}

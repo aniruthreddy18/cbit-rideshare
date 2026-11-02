@@ -1,6 +1,7 @@
 import AppError from './AppError.js';
 
-export const CBIT_EMAIL_REGEX = /^[a-z0-9._%+-]+@cbit\.ac\.in$/;
+// Any normal email address (stored lowercase), e.g. name@gmail.com or roll@cbit.ac.in.
+export const EMAIL_REGEX = /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/;
 export const PHONE_REGEX = /^[6-9]\d{9}$/;
 export const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 export const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -8,7 +9,7 @@ export const OBJECT_ID_REGEX = /^[a-f\d]{24}$/i;
 
 export const BOOKING_STATUSES = ['pending', 'confirmed', 'rejected', 'cancelled'];
 export const MAX_SEATS = 6;
-export const MAX_TOTAL_COST = 10000;
+export const MAX_PRICE_PER_SEAT = 5000;
 
 /**
  * Read a string from untrusted input. Non-strings (objects such as {"$gt": ""})

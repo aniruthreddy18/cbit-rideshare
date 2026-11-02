@@ -5,11 +5,11 @@ import AlertMessage from '../components/AlertMessage.jsx';
 import FormField from '../components/FormField.jsx';
 import Loading from '../components/Loading.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { formatMoney, perPersonShare, todayIST } from '../utils/format.js';
+import { formatMoney, pricePerSeatOf, todayIST } from '../utils/format.js';
 import { COMMON_PLACES } from '../utils/locations.js';
 
 const MAX_SEATS = 6;
-const MAX_COST = 10000;
+const MAX_PRICE = 5000;
 
 // Mirrors parseRideInput() in backend/src/controllers/rideController.js
 function validate(form) {
@@ -29,8 +29,10 @@ function validate(form) {
 
   const seats = Number(form.seats);
   if (!Number.isInteger(seats) || seats < 1 || seats > MAX_SEATS) errors.seats = `Choose 1-${MAX_SEATS} seats.`;
-  const cost = Number(form.totalCost);
-  if (form.totalCost === '' || !Number.isFinite(cost) || cost < 0 || cost > MAX_COST) errors.totalCost = `Enter a cost between ₹0 and ₹${MAX_COST}.`;
+  const price = Number(form.pricePerSeat);
+  if (form.pricePerSeat === '' || !Number.isFinite(price) || price < 0 || price > MAX_PRICE) {
+    errors.pricePerSeat = `Enter a price per person between ₹0 and ₹${MAX_PRICE}.`;
+  }
 
   if (!/^(?:\+?91|0)?[6-9]\d{9}$/.test(form.phone.replace(/[\s()-]/g, ''))) errors.phone = 'Enter a valid 10-digit mobile number.';
   return errors;
@@ -48,7 +50,7 @@ export default function OfferRide() {
     date: todayIST(),
     time: '',
     seats: '3',
-    totalCost: '',
+    pricePerSeat: '',
     phone: user?.phone || '',
     notes: '',
   });
@@ -76,7 +78,7 @@ export default function OfferRide() {
           date: ride.date,
           time: ride.time,
           seats: String(ride.seats),
-          totalCost: String(ride.totalCost),
+          pricePerSeat: String(pricePerSeatOf(ride)),
           phone: ride.phone || user?.phone || '',
           notes: ride.notes || '',
         });
@@ -111,7 +113,7 @@ export default function OfferRide() {
       from: form.from.trim(),
       to: form.to.trim(),
       seats: Number(form.seats),
-      totalCost: Number(form.totalCost),
+      pricePerSeat: Number(form.pricePerSeat),
       notes: form.notes.trim(),
     };
     try {
@@ -127,7 +129,7 @@ export default function OfferRide() {
 
   if (loading) return <Loading label="Loading ride..." />;
 
-  const share = form.totalCost !== '' && Number(form.seats) > 0 ? perPersonShare(form.totalCost, form.seats) : null;
+  const priceValue = form.pricePerSeat !== '' && Number.isFinite(Number(form.pricePerSeat)) ? Number(form.pricePerSeat) : null;
 
   return (
     <div className="container py-4 py-md-5">
@@ -171,14 +173,14 @@ export default function OfferRide() {
                   </FormField>
                 </div>
                 <div className="col-sm-6 col-md-3">
-                  <FormField label="Total cost (₹)" name="totalCost" type="number" icon="currency-rupee" min="0" max={MAX_COST} step="1" placeholder="e.g. 400" value={form.totalCost} onChange={onChange} error={errors.totalCost} />
+                  <FormField label="Price per person (₹)" name="pricePerSeat" type="number" icon="currency-rupee" min="0" max={MAX_PRICE} step="1" placeholder="e.g. 150" value={form.pricePerSeat} onChange={onChange} error={errors.pricePerSeat} />
                 </div>
               </div>
-              {share !== null && !errors.totalCost && (
+              {priceValue !== null && !errors.pricePerSeat && (
                 <div className="cost-preview mb-3">
                   <i className="bi bi-calculator me-2" />
-                  If all {form.seats} seat{form.seats === '1' ? '' : 's'} fill, each of the {Number(form.seats) + 1} riders (including you) pays about{' '}
-                  <strong>{formatMoney(share)}</strong>.
+                  Each passenger pays <strong>{formatMoney(priceValue)}</strong>. With all {form.seats} seat{form.seats === '1' ? '' : 's'} filled you
+                  collect {formatMoney(priceValue)} × {form.seats} = <strong>{formatMoney(priceValue * Number(form.seats))}</strong>.
                 </div>
               )}
 

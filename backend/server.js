@@ -18,6 +18,18 @@ async function ensureIndexes() {
   }
 }
 
+// Rides created before "price per person" existed only have totalCost: derive pricePerSeat once.
+async function migrateRides() {
+  try {
+    const result = await Ride.updateMany({ pricePerSeat: { $exists: false }, totalCost: { $type: 'number' } }, [
+      { $set: { pricePerSeat: { $round: [{ $divide: ['$totalCost', { $max: ['$seats', 1] }] }, 0] } } },
+    ]);
+    if (result.modifiedCount) console.log(`[db] Added price per person to ${result.modifiedCount} older ride(s).`);
+  } catch (err) {
+    console.warn(`[db] Could not update older rides: ${err.message}`);
+  }
+}
+
 async function start() {
   try {
     await connectDB({ uri: env.mongoUri, dbName: env.mongoDbName, dnsServers: env.dnsServers });
@@ -26,6 +38,7 @@ async function start() {
     process.exit(1);
   }
   await ensureIndexes();
+  await migrateRides();
 
   const server = app.listen(env.port, () => {
     console.log(`[api] CBIT RideShare API running at http://localhost:${env.port}/api (${env.nodeEnv})`);

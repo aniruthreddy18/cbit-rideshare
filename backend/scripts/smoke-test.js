@@ -4,7 +4,7 @@
  *   1. Start the API in one terminal:   npm run dev
  *   2. Run this in another terminal:    npm run smoke
  *
- * It registers temporary users (smoketest.*@cbit.ac.in), exercises every rule
+ * It registers temporary users (smoketest.*@cbit.ac.in / @example.com), exercises every rule
  * (validation, duplicates, accept/reject/cancel, seat counts, concurrency) and
  * finally deletes every user, ride and booking it created from MongoDB.
  */
@@ -57,10 +57,10 @@ function istDate(daysAhead) {
   return new Date(Date.now() + 5.5 * 3600 * 1000 + daysAhead * 86400 * 1000).toISOString().slice(0, 10);
 }
 
-async function register(tag) {
+async function register(tag, domain = 'cbit.ac.in') {
   const body = {
     name: `Smoke ${tag}`,
-    email: `smoketest.${tag}.${RUN}@cbit.ac.in`,
+    email: `smoketest.${tag}.${RUN}@${domain}`,
     phone: '9876543210',
     password: PASSWORD,
     confirmPassword: PASSWORD,
@@ -88,7 +88,7 @@ async function main() {
 
   console.log('\nAuthentication');
   let res = await call('POST', '/auth/register', {
-    body: { name: 'X', email: 'someone@gmail.com', phone: '123', password: 'short', confirmPassword: 'nope' },
+    body: { name: 'X', email: 'not-an-email', phone: '123', password: 'short', confirmPassword: 'nope' },
   });
   expectStatus('rejects invalid registration', res, 400);
   check('returns field errors for name/email/phone/password/confirm',
@@ -97,7 +97,7 @@ async function main() {
 
   const owner = await register('owner');
   const alice = await register('alice');
-  const bob = await register('bob');
+  const bob = await register('bob', 'example.com'); // any email domain is allowed
   const extra = await Promise.all([register('p3'), register('p4'), register('p5')]);
   check('password hash is not returned', owner.user && owner.user.password === undefined);
 
@@ -125,10 +125,10 @@ async function main() {
   console.log('\nOffer ride');
   res = await call('POST', '/rides', {
     token: owner.token,
-    body: { from: 'CBIT', to: 'cbit', date: '2000-01-01', time: '25:00', seats: 0, totalCost: -5 },
+    body: { from: 'CBIT', to: 'cbit', date: '2000-01-01', time: '25:00', seats: 0, pricePerSeat: -5 },
   });
   expectStatus('rejects invalid ride', res, 400);
-  check('ride field errors returned', ['to', 'date', 'time', 'seats', 'totalCost'].every((f) => res.data.errors?.[f]),
+  check('ride field errors returned', ['to', 'date', 'time', 'seats', 'pricePerSeat'].every((f) => res.data.errors?.[f]),
     JSON.stringify(res.data.errors));
 
   const rideBody = {
@@ -137,13 +137,15 @@ async function main() {
     date: istDate(1),
     time: '08:30',
     seats: 2,
-    totalCost: 300,
+    pricePerSeat: 150,
     notes: 'Smoke test ride',
   };
   res = await call('POST', '/rides', { token: owner.token, body: rideBody });
   expectStatus('creates ride', res, 201);
   const ride = res.data.ride;
   check('new ride has availableSeats = seats = 2', ride?.availableSeats === 2 && ride?.seats === 2);
+  check('price per person 150 x 2 seats = total 300', ride?.pricePerSeat === 150 && ride?.totalCost === 300,
+    `${ride?.pricePerSeat} / ${ride?.totalCost}`);
   check('ride saved in MongoDB', !!(await Ride.findById(ride?._id)));
 
   console.log('\nFind ride');
@@ -152,8 +154,8 @@ async function main() {
   const found = res.data.rides?.find((r) => r._id === ride._id);
   check('search finds the ride (case-insensitive, partial)', !!found);
   check("owner's phone hidden from non-passengers", found && found.phone === undefined);
-  res = await call('GET', `/rides?from=${encodeURIComponent(`gandipet ${RUN}`)}&maxCost=100`, { token: alice.token });
-  check('maxCost filter excludes the ride', res.data.rides?.length === 0);
+  res = await call('GET', `/rides?from=${encodeURIComponent(`gandipet ${RUN}`)}&maxPrice=100`, { token: alice.token });
+  check('maxPrice filter (per person) excludes the ride', res.data.rides?.length === 0);
 
   console.log('\nJoin + duplicate protection');
   res = await call('POST', '/bookings', { token: owner.token, body: { rideId: ride._id } });
@@ -241,9 +243,10 @@ async function main() {
   console.log('\nEdit and cancel ride');
   res = await call('PUT', `/rides/${ride._id}`, { token: owner.token, body: { ...rideBody, seats: 1 } });
   expectStatus('cannot reduce seats below confirmed passengers', res, 409);
-  res = await call('PUT', `/rides/${ride._id}`, { token: owner.token, body: { ...rideBody, seats: 3, totalCost: 450 } });
+  res = await call('PUT', `/rides/${ride._id}`, { token: owner.token, body: { ...rideBody, seats: 3 } });
   expectStatus('owner adds a seat', res, 200);
   check('seats 3, available 1 after edit', res.data.ride?.seats === 3 && res.data.ride?.availableSeats === 1);
+  check('total recalculated: 150 x 3 = 450', res.data.ride?.totalCost === 450, String(res.data.ride?.totalCost));
   res = await call('PUT', `/rides/${ride._id}`, { token: alice.token, body: rideBody });
   expectStatus('non-owner cannot edit', res, 403);
   res = await call('DELETE', `/rides/${ride._id}`, { token: owner.token });
@@ -258,7 +261,7 @@ async function main() {
 }
 
 async function cleanup() {
-  const users = await User.find({ email: new RegExp(`^smoketest\\..+\\.${RUN}@cbit\\.ac\\.in$`) }).select('_id');
+  const users = await User.find({ email: new RegExp(`^smoketest\\..+\\.${RUN}@`) }).select('_id');
   const ids = users.map((u) => u._id);
   const rides = await Ride.find({ owner: { $in: ids } }).select('_id');
   const b = await Booking.deleteMany({ $or: [{ passenger: { $in: ids } }, { ride: { $in: rides.map((r) => r._id) } }] });

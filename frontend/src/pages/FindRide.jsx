@@ -5,11 +5,11 @@ import AlertMessage from '../components/AlertMessage.jsx';
 import Loading from '../components/Loading.jsx';
 import RideCard from '../components/RideCard.jsx';
 import RouteLine from '../components/RouteLine.jsx';
-import { formatDate, formatMoney, formatTime, todayIST } from '../utils/format.js';
+import { formatDate, formatMoney, formatTime, pricePerSeatOf, todayIST } from '../utils/format.js';
 import { COMMON_PLACES } from '../utils/locations.js';
 
-const FILTER_KEYS = ['q', 'from', 'to', 'date', 'minSeats', 'maxCost', 'sort'];
-const EMPTY_FILTERS = { q: '', from: '', to: '', date: '', minSeats: '1', maxCost: '', sort: 'soonest' };
+const FILTER_KEYS = ['q', 'from', 'to', 'date', 'minSeats', 'maxPrice', 'sort'];
+const EMPTY_FILTERS = { q: '', from: '', to: '', date: '', minSeats: '1', maxPrice: '', sort: 'soonest' };
 
 function filtersFromParams(params) {
   const filters = { ...EMPTY_FILTERS };
@@ -132,8 +132,8 @@ export default function FindRide() {
               </select>
             </div>
             <div className="col-sm-4 col-lg-2">
-              <label className="form-label small fw-semibold" htmlFor="f-cost">Max total cost (₹)</label>
-              <input id="f-cost" name="maxCost" type="number" min="0" step="10" className="form-control" placeholder="Any" value={filters.maxCost} onChange={onChange} />
+              <label className="form-label small fw-semibold" htmlFor="f-cost">Max price / person (₹)</label>
+              <input id="f-cost" name="maxPrice" type="number" min="0" step="10" className="form-control" placeholder="Any" value={filters.maxPrice} onChange={onChange} />
             </div>
           </div>
           <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
@@ -141,7 +141,7 @@ export default function FindRide() {
               <label className="small text-secondary" htmlFor="f-sort">Sort by</label>
               <select id="f-sort" name="sort" className="form-select form-select-sm w-auto" value={filters.sort} onChange={onChange}>
                 <option value="soonest">Departure (soonest)</option>
-                <option value="cheapest">Total cost (lowest)</option>
+                <option value="cheapest">Price per person (lowest)</option>
                 <option value="seats">Seats left (most)</option>
               </select>
             </div>
@@ -205,7 +205,7 @@ export default function FindRide() {
                 <div className="modal-body">
                   <RouteLine from={joinTarget.from} to={joinTarget.to} />
                   <p className="small text-secondary mt-3 mb-3">
-                    {formatDate(joinTarget.date)} at {formatTime(joinTarget.time)} · {formatMoney(joinTarget.totalCost)} total ·
+                    {formatDate(joinTarget.date)} at {formatTime(joinTarget.time)} · <strong>{formatMoney(pricePerSeatOf(joinTarget))} per person</strong> ·
                     offered by <strong>{joinTarget.name}</strong>
                   </p>
                   <label className="form-label small fw-semibold" htmlFor="join-message">Message to the owner (optional)</label>

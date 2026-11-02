@@ -1,10 +1,11 @@
-import { formatDate, formatMoney, formatTime, perPersonShare } from '../utils/format.js';
+import { formatDate, formatMoney, formatTime, pricePerSeatOf } from '../utils/format.js';
 import RouteLine from './RouteLine.jsx';
 import StatusBadge from './StatusBadge.jsx';
 
 /** A ride in the Find Ride list, with the Join Ride action. */
 export default function RideCard({ ride, onJoin, joining }) {
   const booking = ride.myBooking;
+  const price = pricePerSeatOf(ride);
   const canRequest = !ride.isOwner && (!booking || booking.status === 'cancelled') && ride.availableSeats > 0;
 
   let action;
@@ -27,8 +28,8 @@ export default function RideCard({ ride, onJoin, joining }) {
         <div className="d-flex justify-content-between align-items-start mb-3 gap-2">
           <RouteLine from={ride.from} to={ride.to} />
           <div className="text-end flex-shrink-0">
-            <div className="fs-5 fw-bold text-primary">{formatMoney(ride.totalCost)}</div>
-            <div className="small text-secondary">total</div>
+            <div className="fs-5 fw-bold text-primary">{formatMoney(price)}</div>
+            <div className="small text-secondary">per person</div>
           </div>
         </div>
 
@@ -38,7 +39,7 @@ export default function RideCard({ ride, onJoin, joining }) {
           <span className={ride.availableSeats <= 1 ? 'text-danger fw-semibold' : ''}>
             <i className="bi bi-people" /> {ride.availableSeats} of {ride.seats} seat{ride.seats === 1 ? '' : 's'} left
           </span>
-          <span><i className="bi bi-cash-coin" /> ≈ {formatMoney(perPersonShare(ride.totalCost, ride.seats))}/head when full</span>
+          <span><i className="bi bi-cash-coin" /> {formatMoney(price)} × {ride.seats} seat{ride.seats === 1 ? '' : 's'} = {formatMoney(price * ride.seats)}</span>
         </div>
 
         {ride.notes && <p className="small text-secondary mb-3 fst-italic">“{ride.notes}”</p>}

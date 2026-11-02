@@ -1,6 +1,7 @@
 # CBIT RideShare
 
-A ride-sharing platform exclusively for CBIT Hyderabad students (`@cbit.ac.in` emails only).
+A ride-sharing platform for CBIT Hyderabad students. Students register with any email address; ride owners set a
+**price per person**, and the app shows the total (e.g. ₹150 × 3 seats = ₹450).
 
 - **Frontend:** React 19, Vite 7, React Router 7, Bootstrap 5, Axios
 - **Backend:** Node.js, Express 5, Mongoose 8 (MongoDB Atlas), JWT, bcrypt
@@ -140,7 +141,7 @@ cd ~/Downloads/cbit-rideshare/backend
 npm run smoke
 ```
 
-This registers temporary `smoketest.*@cbit.ac.in` users and checks registration/validation, bcrypt hashing, login,
+This registers temporary `smoketest.*` users and checks registration/validation, bcrypt hashing, login,
 protected routes, ride creation, search filters, join requests, duplicate prevention, owner approval, rejection,
 cancellation, seat counts (including simultaneous clicks), ride editing and ride cancellation. It deletes everything
 it created at the end and prints `N passed, 0 failed`.
@@ -160,8 +161,8 @@ All routes except register/login/health need `Authorization: Bearer <token>`. Er
 | POST | `/api/auth/register` | anyone | `{ name, email, phone, password, confirmPassword }` |
 | POST | `/api/auth/login` | anyone | `{ email, password }` → `{ token, user }` |
 | GET | `/api/auth/me` | user | current user |
-| GET | `/api/rides` | user | upcoming rides with free seats. Query: `q, from, to, date, minSeats, maxCost, sort=soonest\|cheapest\|seats` |
-| POST | `/api/rides` | user | `{ from, to, date: "YYYY-MM-DD", time: "HH:mm", seats, totalCost, phone?, notes? }` |
+| GET | `/api/rides` | user | upcoming rides with free seats. Query: `q, from, to, date, minSeats, maxPrice` (per person), `sort=soonest\|cheapest\|seats` |
+| POST | `/api/rides` | user | `{ from, to, date: "YYYY-MM-DD", time: "HH:mm", seats, pricePerSeat, phone?, notes? }` → `totalCost = pricePerSeat × seats` |
 | GET | `/api/rides/mine` | user | rides I offer, each with all its booking requests |
 | GET | `/api/rides/:id` | user | one ride |
 | PUT | `/api/rides/:id` | owner | edit ride (seats can't go below confirmed passengers) |

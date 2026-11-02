@@ -4,11 +4,11 @@ import { useAuth } from '../context/AuthContext.jsx';
 const STEPS = [
   { icon: 'search', title: 'Find a ride', text: 'Search rides by route, date, seats and cost - all offered by verified CBIT students.' },
   { icon: 'send-check', title: 'Request to join', text: 'Send a request. The ride owner accepts or rejects it, and your seat is confirmed instantly.' },
-  { icon: 'cash-stack', title: 'Split the cost', text: 'Share fuel or cab costs with fellow students and save money every day.' },
+  { icon: 'cash-stack', title: 'Clear per-person price', text: 'Every ride shows exactly what one seat costs - no hidden calculations.' },
 ];
 
 const FEATURES = [
-  { icon: 'shield-lock', title: 'CBIT-only community', text: 'Only @cbit.ac.in email addresses can register.' },
+  { icon: 'mortarboard', title: 'Made for CBIT students', text: 'Find classmates on your route. Sign up with any email in seconds.' },
   { icon: 'person-check', title: 'Owner approval', text: 'Ride owners decide who joins. Seats update automatically.' },
   { icon: 'telephone', title: 'Private contact details', text: 'Phone numbers are shared only after a booking is confirmed.' },
   { icon: 'arrow-counterclockwise', title: 'Flexible cancellation', text: 'Plans changed? Cancel and the seat goes back to the ride.' },
@@ -44,7 +44,7 @@ export default function Home() {
               </div>
               {!user && (
                 <p className="text-white-50 small mt-3 mb-0">
-                  New here? <Link to="/register" className="link-light fw-semibold">Create your account</Link> with your CBIT email.
+                  New here? <Link to="/register" className="link-light fw-semibold">Create your account</Link> in under a minute.
                 </p>
               )}
             </div>

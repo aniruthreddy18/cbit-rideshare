@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
-import { CBIT_EMAIL_REGEX, PHONE_REGEX } from '../utils/validators.js';
+import { EMAIL_REGEX, PHONE_REGEX } from '../utils/validators.js';
 
 const userSchema = new mongoose.Schema(
   {
@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: [CBIT_EMAIL_REGEX, 'Use your CBIT email address (ending in @cbit.ac.in)'],
+      maxlength: [254, 'Email is too long'],
+      match: [EMAIL_REGEX, 'Enter a valid email address'],
     },
     phone: {
       type: String,
